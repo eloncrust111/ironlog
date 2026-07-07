@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="IRONLOG">
+<meta name="theme-color" content="#0E0E10">
+<title>IRONLOG</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0E0E10; --surface:#17171B; --surface-2:#1F1F25; --line:#2C2C34;
+    --text:#F5F5F0; --muted:#8A8A94; --dim:#5A5A64;
+    --lime:#C8FF00; --lime-dim:#8a9e2b; --hot:#FF5A3C; --steel:#5B9BD5;
+    --r:14px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+  html,body{background:var(--bg);color:var(--text);font-family:'Inter',system-ui,sans-serif;overscroll-behavior-y:none}
+  body{padding:env(safe-area-inset-top) env(safe-area-inset-right) 0 env(safe-area-inset-left);min-height:100vh}
+  .cond{font-family:'Barlow Condensed','Inter',sans-serif}
+  .app{max-width:640px;margin:0 auto;padding:0 16px 120px}
+
+  header{padding:20px 2px 14px;display:flex;align-items:baseline;justify-content:space-between}
+  .brand{font-family:'Barlow Condensed';font-weight:700;font-size:30px;letter-spacing:2px;line-height:1}
+  .brand span{color:var(--lime)}
+  .brand small{display:block;font-family:'Inter';font-weight:500;font-size:10px;letter-spacing:3px;color:var(--dim);margin-top:4px}
+  .datechip{font-family:'Barlow Condensed';font-weight:600;font-size:14px;letter-spacing:1px;color:var(--muted);text-align:right}
+
+  .tabs{display:flex;gap:6px;background:var(--surface);padding:5px;border-radius:var(--r);border:1px solid var(--line);margin-bottom:18px}
+  .tab{flex:1;text-align:center;padding:11px 4px;border-radius:10px;font-family:'Barlow Condensed';font-weight:600;font-size:17px;letter-spacing:1px;color:var(--muted);cursor:pointer;transition:.15s;border:none;background:none}
+  .tab.on{background:var(--surface-2);color:var(--text)}
+  .tab.on[data-day="PUSH"]{color:var(--hot)}
+  .tab.on[data-day="PULL"]{color:var(--steel)}
+  .tab.on[data-day="LEGS"]{color:var(--lime)}
+
+  .ex{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);margin-bottom:11px;overflow:hidden}
+  .ex-head{display:flex;align-items:center;gap:12px;padding:14px 15px;cursor:pointer}
+  .ex-name{flex:1;min-width:0}
+  .ex-name h3{font-family:'Barlow Condensed';font-weight:600;font-size:20px;letter-spacing:.3px;line-height:1.05;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .ex-name .sub{font-size:11px;color:var(--dim);margin-top:2px;letter-spacing:.2px}
+  .ex-cur{text-align:right;flex-shrink:0}
+  .ex-cur .w{font-family:'Barlow Condensed';font-weight:700;font-size:26px;line-height:1}
+  .ex-cur .u{font-size:10px;color:var(--muted);letter-spacing:1px}
+  .nudge{display:inline-flex;align-items:center;gap:5px;margin-top:5px;padding:3px 8px;border-radius:20px;font-size:10px;font-weight:700;letter-spacing:.8px;font-family:'Inter'}
+  .nudge.up{background:rgba(200,255,0,.13);color:var(--lime)}
+  .nudge.hold{background:rgba(138,138,148,.13);color:var(--muted)}
+
+  .ex-body{max-height:0;overflow:hidden;transition:max-height .28s ease}
+  .ex.open .ex-body{max-height:640px}
+  .ex-inner{padding:2px 15px 16px;border-top:1px solid var(--line)}
+  .logrow{display:flex;gap:9px;align-items:flex-end;padding-top:14px}
+  .fld{flex:1}
+  .fld label{display:block;font-size:10px;letter-spacing:1.4px;color:var(--dim);text-transform:uppercase;margin-bottom:5px;font-weight:600}
+  .fld input{width:100%;background:var(--surface-2);border:1px solid var(--line);color:var(--text);font-family:'Barlow Condensed';font-weight:600;font-size:24px;text-align:center;padding:9px 4px;border-radius:10px;outline:none}
+  .fld input:focus{border-color:var(--lime)}
+  .save{background:var(--lime);color:#0E0E10;border:none;font-family:'Barlow Condensed';font-weight:700;font-size:19px;letter-spacing:1px;padding:11px 18px;border-radius:10px;cursor:pointer;flex-shrink:0;height:52px}
+  .save:active{transform:scale(.96)}
+
+  .hist{margin-top:15px}
+  .hist-t{font-size:10px;letter-spacing:1.5px;color:var(--dim);text-transform:uppercase;font-weight:600;margin-bottom:9px}
+  .spark{width:100%;height:70px;display:block;margin-bottom:10px}
+  .rows{display:flex;flex-direction:column;gap:1px}
+  .h-row{display:grid;grid-template-columns:1fr auto auto;gap:10px;align-items:center;padding:7px 0;border-top:1px solid var(--line);font-size:13px}
+  .h-row .d{color:var(--muted)}
+  .h-row .v{font-family:'Barlow Condensed';font-weight:600;font-size:16px;letter-spacing:.5px}
+  .h-row .v.pr{color:var(--lime)}
+  .h-empty{color:var(--dim);font-size:12px;padding:10px 0;text-align:center}
+  .del{color:var(--dim);font-size:11px;background:none;border:none;cursor:pointer;padding:4px}
+  .target{display:flex;align-items:center;gap:8px;margin-top:14px;font-size:11px;color:var(--muted);letter-spacing:.3px}
+  .target input{width:52px;background:var(--surface-2);border:1px solid var(--line);color:var(--text);text-align:center;padding:5px;border-radius:7px;font-family:'Barlow Condensed';font-weight:600;font-size:16px}
+
+  /* bodyweight */
+  .bw-card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:20px 18px;margin-bottom:16px}
+  .bw-now{display:flex;align-items:baseline;gap:10px}
+  .bw-now .n{font-family:'Barlow Condensed';font-weight:700;font-size:54px;line-height:.9}
+  .bw-now .u{font-size:13px;color:var(--muted);letter-spacing:1px}
+  .bw-trend{margin-left:auto;text-align:right;font-size:12px}
+  .bw-trend .arrow{font-family:'Barlow Condensed';font-weight:700;font-size:22px}
+  .up-c{color:var(--lime)} .dn-c{color:var(--steel)} .fl-c{color:var(--muted)}
+  .bw-log{display:flex;gap:9px;margin-top:18px}
+  .bw-log input{flex:1;background:var(--surface-2);border:1px solid var(--line);color:var(--text);font-family:'Barlow Condensed';font-weight:600;font-size:22px;text-align:center;padding:10px;border-radius:10px;outline:none}
+  .bw-log input:focus{border-color:var(--lime)}
+  .bwchart{width:100%;height:150px;display:block;margin-top:6px}
+  .goal-note{font-size:11px;color:var(--dim);margin-top:14px;line-height:1.5}
+
+  .sec-t{font-family:'Barlow Condensed';font-weight:600;font-size:13px;letter-spacing:2px;color:var(--dim);text-transform:uppercase;margin:4px 2px 12px}
+  .hidden{display:none}
+  .toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom));transform:translateX(-50%) translateY(20px);background:var(--lime);color:#0E0E10;font-family:'Barlow Condensed';font-weight:700;font-size:16px;letter-spacing:1px;padding:12px 22px;border-radius:30px;opacity:0;transition:.25s;pointer-events:none;z-index:50;white-space:nowrap}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+  .foot{text-align:center;color:var(--dim);font-size:10px;letter-spacing:1px;padding:24px 0 8px}
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <div class="brand">IRON<span>LOG</span><small>PROGRESSIVE OVERLOAD</small></div>
+    <div class="datechip" id="today"></div>
+  </header>
+
+  <div class="tabs" id="tabs">
+    <button class="tab on" data-day="PUSH">PUSH</button>
+    <button class="tab" data-day="PULL">PULL</button>
+    <button class="tab" data-day="LEGS">LEGS</button>
+    <button class="tab" data-day="BODY">BODY</button>
+  </div>
+
+  <div id="lifts"></div>
+
+  <div id="bodyview" class="hidden">
+    <div class="sec-t">Bodyweight — Bulk</div>
+    <div class="bw-card">
+      <div class="bw-now">
+        <div><span class="n" id="bwNow">—</span></div>
+        <div class="u">LBS</div>
+        <div class="bw-trend" id="bwTrend"></div>
+      </div>
+      <div class="bw-log">
+        <input id="bwInput" type="number" inputmode="decimal" placeholder="today's weight">
+        <button class="save" onclick="logBW()">LOG</button>
+      </div>
+      <svg class="bwchart" id="bwChart"></svg>
+      <div class="goal-note" id="bwNote"></div>
+    </div>
+  </div>
+
+  <div class="foot">TAP AN EXERCISE TO LOG · DATA SAVED ON THIS DEVICE</div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+const SEED = [
+  // PUSH
+  ["Chest Fly","PUSH",130,"machine"],
+  ["Cable Chest Fly","PUSH",60,"per side"],
+  ["DB Incline Chest Press","PUSH",52.5,"per DB"],
+  ["Shoulder Press","PUSH",120,"machine"],
+  ["Cable Lateral Raise","PUSH",20,"per side"],
+  ["Cable Rear Delt Fly","PUSH",20,"per side"],
+  ["Tricep Overhead","PUSH",70,"cable"],
+  ["JM Press","PUSH",10,""],
+  // PULL
+  ["Wide Lat Pulldown","PULL",120,""],
+  ["Close Grip Pulldown","PULL",130,""],
+  ["Seated Row","PULL",140,""],
+  ["Preacher Curl","PULL",25,""],
+  ["Hammer Curl","PULL",30,"per DB"],
+  ["Incline Curl","PULL",27.5,"per DB"],
+  ["Reverse Curl","PULL",40,""],
+  ["Preacher Machine","PULL",80,""],
+  // LEGS
+  ["Leg Press","LEGS",115,"2 plates + 25/side"],
+  ["Hamstring Curl","LEGS",140,""],
+  ["Leg Extension","LEGS",170,""],
+  ["Adductor","LEGS",130,""],
+  ["SLDL","LEGS",65,"45 + 20/side"],
+  ["Calf Raise","LEGS",110,""],
+];
+
+const LS='ironlog_v1';
+let state=load();
+function load(){
+  let s=localStorage.getItem(LS);
+  if(s){try{return JSON.parse(s)}catch(e){}}
+  let ex={};
+  SEED.forEach((e,i)=>{ex['e'+i]={name:e[0],day:e[1],start:e[2],note:e[3],target:10,log:[]}});
+  return {ex, bw:[]};
+}
+function save(){localStorage.setItem(LS,JSON.stringify(state))}
+
+let curDay='PUSH';
+const $=s=>document.querySelector(s);
+const el=(t,c)=>{let e=document.createElement(t);if(c)e.className=c;return e};
+const fmt=n=>Number.isInteger(n)?n:n.toFixed(1).replace(/\.0$/,'');
+function fdate(iso){let d=new Date(iso);return d.toLocaleDateString('en-US',{month:'short',day:'numeric'})}
+$('#today').textContent=new Date().toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'}).toUpperCase();
+
+// increment logic based on load size
+function increment(w){return w<40?2.5:5}
+// suggestion: last session hit target reps -> load up
+function suggestion(e){
+  if(!e.log.length) return {type:'hold',txt:'LOG TO START'};
+  const last=e.log[e.log.length-1];
+  if(last.reps>=e.target){
+    const inc=increment(last.weight);
+    return {type:'up',txt:'LOAD UP +'+fmt(inc),next:last.weight+inc};
+  }
+  return {type:'hold',txt:'HOLD '+fmt(last.weight)+' · HIT '+e.target};
+}
+function currentWeight(e){return e.log.length?e.log[e.log.length-1].weight:e.start}
+function isPR(e,entry){return e.log.every(l=>l===entry||l.weight<=entry.weight)&&entry===e.log.reduce((a,b)=>b.weight>=a.weight?b:a)}
+
+function sparkline(log){
+  if(log.length<2) return '';
+  const w=300,h=70,p=6;
+  const ws=log.map(l=>l.weight);
+  const min=Math.min(...ws),max=Math.max(...ws),rng=max-min||1;
+  const step=(w-p*2)/(log.length-1);
+  const pts=log.map((l,i)=>[p+i*step, h-p-((l.weight-min)/rng)*(h-p*2)]);
+  const d=pts.map((pt,i)=>(i?'L':'M')+pt[0].toFixed(1)+' '+pt[1].toFixed(1)).join(' ');
+  const area=d+` L ${pts[pts.length-1][0].toFixed(1)} ${h} L ${pts[0][0].toFixed(1)} ${h} Z`;
+  return `<svg class="spark" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none">
+    <path d="${area}" fill="rgba(200,255,0,.08)"/>
+    <path d="${d}" fill="none" stroke="#C8FF00" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    ${pts.map(pt=>`<circle cx="${pt[0].toFixed(1)}" cy="${pt[1].toFixed(1)}" r="2.5" fill="#C8FF00"/>`).join('')}
+  </svg>`;
+}
+
+function renderLifts(){
+  const box=$('#lifts');box.innerHTML='';
+  Object.entries(state.ex).filter(([id,e])=>e.day===curDay).forEach(([id,e])=>{
+    const s=suggestion(e), cw=currentWeight(e);
+    const card=el('div','ex');card.dataset.id=id;
+    card.innerHTML=`
+      <div class="ex-head">
+        <div class="ex-name">
+          <h3>${e.name}</h3>
+          ${e.note?`<div class="sub">${e.note}</div>`:''}
+        </div>
+        <div class="ex-cur">
+          <div><span class="w">${fmt(cw)}</span> <span class="u">LBS</span></div>
+          <span class="nudge ${s.type}">${s.type==='up'?'▲ ':''}${s.txt}</span>
+        </div>
+      </div>
+      <div class="ex-body"><div class="ex-inner">
+        <div class="logrow">
+          <div class="fld"><label>Weight</label><input type="number" inputmode="decimal" class="in-w" value="${s.next!=null?fmt(s.next):fmt(cw)}"></div>
+          <div class="fld"><label>Reps</label><input type="number" inputmode="numeric" class="in-r" placeholder="${e.target}"></div>
+          <button class="save">SAVE</button>
+        </div>
+        <div class="target">Target reps to load up:
+          <input type="number" inputmode="numeric" class="in-t" value="${e.target}">
+        </div>
+        <div class="hist">
+          <div class="hist-t">History</div>
+          ${sparkline(e.log)}
+          <div class="rows">${histRows(e)}</div>
+        </div>
+      </div></div>`;
+    // toggle open
+    card.querySelector('.ex-head').addEventListener('click',()=>{
+      document.querySelectorAll('.ex.open').forEach(o=>{if(o!==card)o.classList.remove('open')});
+      card.classList.toggle('open');
+    });
+    card.querySelector('.save').addEventListener('click',ev=>{
+      ev.stopPropagation();
+      const w=parseFloat(card.querySelector('.in-w').value);
+      const r=parseInt(card.querySelector('.in-r').value);
+      if(isNaN(w)||isNaN(r)||r<=0){toast('ENTER WEIGHT & REPS');return}
+      e.log.push({date:new Date().toISOString(),weight:w,reps:r});
+      save();
+      const hit=r>=e.target;
+      toast(hit?'LOGGED · LOAD UP NEXT ▲':'LOGGED ✓');
+      renderLifts();
+      // reopen same card
+      const nc=box.querySelector(`.ex[data-id="${id}"]`);if(nc)nc.classList.add('open');
+    });
+    card.querySelector('.in-t').addEventListener('change',ev=>{
+      const v=parseInt(ev.target.value);if(v>0){e.target=v;save();renderLifts();
+      const nc=box.querySelector(`.ex[data-id="${id}"]`);if(nc)nc.classList.add('open');}
+    });
+    card.querySelectorAll('.del').forEach(b=>b.addEventListener('click',ev=>{
+      ev.stopPropagation();
+      const idx=parseInt(b.dataset.i);e.log.splice(idx,1);save();renderLifts();
+      const nc=box.querySelector(`.ex[data-id="${id}"]`);if(nc)nc.classList.add('open');
+    }));
+    box.appendChild(card);
+  });
+}
+function histRows(e){
+  if(!e.log.length) return '<div class="h-empty">No sets logged yet — your first entry sets the baseline.</div>';
+  const top=e.log.reduce((a,b)=>b.weight>=a.weight?b:a);
+  return e.log.slice().reverse().map((l,ri)=>{
+    const i=e.log.length-1-ri;
+    const pr=l===top&&e.log.length>1;
+    return `<div class="h-row">
+      <span class="d">${fdate(l.date)}</span>
+      <span class="v ${pr?'pr':''}">${fmt(l.weight)} lb × ${l.reps}${pr?' ★':''}</span>
+      <button class="del" data-i="${i}">remove</button>
+    </div>`;
+  }).join('');
+}
+
+// ---- Bodyweight ----
+function renderBW(){
+  const bw=state.bw;
+  const now=bw.length?bw[bw.length-1].weight:null;
+  $('#bwNow').textContent=now!=null?fmt(now):'—';
+  const trend=$('#bwTrend');
+  if(bw.length>=2){
+    const prev=bw[bw.length-2].weight, diff=now-prev;
+    const cls=diff>0?'up-c':diff<0?'dn-c':'fl-c';
+    const ar=diff>0?'▲':diff<0?'▼':'—';
+    trend.innerHTML=`<span class="arrow ${cls}">${ar} ${fmt(Math.abs(diff))}</span><br><span style="color:var(--dim)">since last</span>`;
+  } else trend.innerHTML='';
+  $('#bwChart').innerHTML=bwChart(bw);
+  // note: bulk framing
+  const note=$('#bwNote');
+  if(bw.length>=2){
+    const first=bw[0].weight, span=now-first;
+    const days=Math.max(1,Math.round((new Date(bw[bw.length-1].date)-new Date(bw[0].date))/864e5));
+    const perWk=(span/days*7);
+    note.innerHTML=`On a bulk, a steady climb is the goal. You're ${span>=0?'up':'down'} <b style="color:var(--lime)">${fmt(Math.abs(span))} lb</b> over ${days} day${days>1?'s':''} — about <b>${fmt(perWk)} lb/week</b>. A clean bulk usually runs ~0.5–1 lb/week; faster than that trends toward more fat gain.`;
+  } else note.textContent='Log your weight a few times a week. Once there are two entries, you\u2019ll see your weekly rate here.';
+}
+function bwChart(bw){
+  if(bw.length<2) return `<text x="12" y="80" fill="#5A5A64" font-size="12" font-family="Inter">Need 2+ entries for a chart.</text>`;
+  const w=600,h=150,pL=8,pR=8,pT=14,pB=18;
+  const ws=bw.map(b=>b.weight);
+  const min=Math.min(...ws),max=Math.max(...ws),rng=(max-min)||1;
+  const step=(w-pL-pR)/(bw.length-1);
+  const pts=bw.map((b,i)=>[pL+i*step, pT+(h-pT-pB)-((b.weight-min)/rng)*(h-pT-pB)]);
+  const d=pts.map((p,i)=>(i?'L':'M')+p[0].toFixed(1)+' '+p[1].toFixed(1)).join(' ');
+  const area=d+` L ${pts[pts.length-1][0].toFixed(1)} ${h-pB} L ${pts[0][0].toFixed(1)} ${h-pB} Z`;
+  return `<svg class="bwchart" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none">
+    <path d="${area}" fill="rgba(200,255,0,.07)"/>
+    <path d="${d}" fill="none" stroke="#C8FF00" stroke-width="2.5" stroke-linejoin="round"/>
+    ${pts.map(p=>`<circle cx="${p[0].toFixed(1)}" cy="${p[1].toFixed(1)}" r="3" fill="#C8FF00"/>`).join('')}
+    <text x="${pL}" y="11" fill="#5A5A64" font-size="11" font-family="Inter">${fmt(max)}</text>
+    <text x="${pL}" y="${h-4}" fill="#5A5A64" font-size="11" font-family="Inter">${fmt(min)}</text>
+  </svg>`;
+}
+function logBW(){
+  const v=parseFloat($('#bwInput').value);
+  if(isNaN(v)||v<=0){toast('ENTER A WEIGHT');return}
+  state.bw.push({date:new Date().toISOString(),weight:v});
+  save();$('#bwInput').value='';toast('BODYWEIGHT LOGGED ✓');renderBW();
+}
+
+// ---- tabs ----
+$('#tabs').addEventListener('click',e=>{
+  const b=e.target.closest('.tab');if(!b)return;
+  curDay=b.dataset.day;
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));
+  b.classList.add('on');
+  const body=curDay==='BODY';
+  $('#lifts').classList.toggle('hidden',body);
+  $('#bodyview').classList.toggle('hidden',!body);
+  if(body)renderBW();else renderLifts();
+});
+
+let toastT;
+function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('show'),1700)}
+
+renderLifts();
+</script>
+</body>
+</html>
